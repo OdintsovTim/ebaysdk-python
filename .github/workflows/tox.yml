@@ -1,14 +1,23 @@
-name: tox
+name: ebaysdk tests
 on: [push, pull_request, workflow_dispatch]
+
 jobs:
   tests:
     runs-on: ubuntu-latest
     strategy:
-      matrix: { python-version: ["3.11","3.12"] }
+      fail-fast: false
+      matrix:
+        python-version: ["3.10","3.11","3.12"]
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: ${{ matrix.python-version }} }
-      - run: python -m pip install -U pip tox
-      - run: tox -l || true
-      - run: tox -e py${{ matrix.python-version // '.' }}
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
+          pip install -e .
+          pip install pytest
+      - name: Run tests
+        run: pytest -q tests/
